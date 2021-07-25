@@ -1,0 +1,86 @@
+# =========================================== from installer and producer ===========================================
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ minikube start
+😄  minikube v1.18.1 on Darwin 11.4
+✨  Using the hyperkit driver based on user configuration
+👍  Starting control plane node minikube in cluster minikube
+🔥  Creating hyperkit VM (CPUs=4, Memory=8192MB, Disk=36864MB) ...
+🐳  Preparing Kubernetes v1.20.2 on Docker 20.10.3 ...
+    ▪ Generating certificates and keys ...
+    ▪ Booting up control plane ...
+    ▪ Configuring RBAC rules ...
+🔎  Verifying Kubernetes components...
+    ▪ Using image gcr.io/k8s-minikube/storage-provisioner:v4
+🌟  Enabled addons: storage-provisioner, default-storageclass
+🏄  Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl create namespace kafka
+namespace/kafka created
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ getns
+    namespace: default
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
+customresourcedefinition.apiextensions.k8s.io/kafkas.kafka.strimzi.io created
+rolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator-entity-operator-delegation created
+clusterrolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator created
+customresourcedefinition.apiextensions.k8s.io/kafkausers.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkarebalances.kafka.strimzi.io created
+deployment.apps/strimzi-cluster-operator created
+customresourcedefinition.apiextensions.k8s.io/kafkamirrormaker2s.kafka.strimzi.io created
+clusterrole.rbac.authorization.k8s.io/strimzi-entity-operator created
+clusterrole.rbac.authorization.k8s.io/strimzi-cluster-operator-global created
+clusterrolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator-kafka-broker-delegation created
+rolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator created
+clusterrole.rbac.authorization.k8s.io/strimzi-cluster-operator-namespaced created
+clusterrolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator-kafka-client-delegation created
+clusterrole.rbac.authorization.k8s.io/strimzi-kafka-client created
+serviceaccount/strimzi-cluster-operator created
+clusterrole.rbac.authorization.k8s.io/strimzi-kafka-broker created
+customresourcedefinition.apiextensions.k8s.io/kafkatopics.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkabridges.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkaconnectors.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkaconnects2is.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkaconnects.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkamirrormakers.kafka.strimzi.io created
+configmap/strimzi-cluster-operator created
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl wait kafka/my-cluster --for=condition=Ready --timeout=300s -n kafka
+Error from server (NotFound): kafkas.kafka.strimzi.io "my-cluster" not found
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl apply -f https://strimzi.io/examples/latest/kafka/kafka-persistent-single.yaml -n kafka 
+kafka.kafka.strimzi.io/my-cluster created
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl wait kafka/my-cluster --for=condition=Ready --timeout=300s -n kafka
+kafka.kafka.strimzi.io/my-cluster condition met
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl -n kafka run kafka-producer -ti --image=quay.io/strimzi/kafka:0.24.0-kafka-2.8.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic
+
+If you don't see a command prompt, try pressing enter.
+
+>[2021-07-25 15:56:31,017] WARN [Producer clientId=console-producer] Error while fetching metadata with correlation id 1 : {my-topic=LEADER_NOT_AVAILABLE} (org.apache.kafka.clients.NetworkClient)
+>
+>ls topics
+>ls topic
+>Arif
+>Hello from Arif
+>
+
+
+
+
+# =========================================== from observation and consumer ===========================================

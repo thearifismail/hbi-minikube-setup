@@ -1,0 +1,77 @@
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ minikube start
+😄  minikube v1.18.1 on Darwin 11.4
+✨  Using the hyperkit driver based on user configuration
+👍  Starting control plane node minikube in cluster minikube
+🔥  Creating hyperkit VM (CPUs=4, Memory=8192MB, Disk=36864MB) ...
+🐳  Preparing Kubernetes v1.20.2 on Docker 20.10.3 ...
+    ▪ Generating certificates and keys ...
+    ▪ Booting up control plane ...
+    ▪ Configuring RBAC rules ...
+🔎  Verifying Kubernetes components...
+    ▪ Using image gcr.io/k8s-minikube/storage-provisioner:v4
+🌟  Enabled addons: storage-provisioner, default-storageclass
+🏄  Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl create namespace hbi
+namespace/hbi created
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ wget -O strimzi-installer.yaml --no-check-certificate https://strimzi.io/install/latest?namespace=hbi
+--2021-07-25 15:27:03--  https://strimzi.io/install/latest?namespace=hbi
+Resolving strimzi.io (strimzi.io)... 107.22.119.243, 35.185.123.140
+Connecting to strimzi.io (strimzi.io)|107.22.119.243|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/plain]
+Saving to: ‘strimzi-installer.yaml’
+
+strimzi-installer.yaml                        [ <=>                                                                                ] 947.07K  6.01MB/s    in 0.2s    
+
+2021-07-25 15:27:04 (6.01 MB/s) - ‘strimzi-installer.yaml’ saved [969796]
+
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl get ns
+NAME              STATUS   AGE
+default           Active   17m
+hbi               Active   16m
+kube-node-lease   Active   17m
+kube-public       Active   17m
+kube-system       Active   17m
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl create -f strimzi-installer.yaml -n hbi
+customresourcedefinition.apiextensions.k8s.io/kafkas.kafka.strimzi.io created
+rolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator-entity-operator-delegation created
+clusterrolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator created
+customresourcedefinition.apiextensions.k8s.io/kafkausers.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkarebalances.kafka.strimzi.io created
+deployment.apps/strimzi-cluster-operator created
+customresourcedefinition.apiextensions.k8s.io/kafkamirrormaker2s.kafka.strimzi.io created
+clusterrole.rbac.authorization.k8s.io/strimzi-entity-operator created
+clusterrole.rbac.authorization.k8s.io/strimzi-cluster-operator-global created
+clusterrolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator-kafka-broker-delegation created
+rolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator created
+clusterrole.rbac.authorization.k8s.io/strimzi-cluster-operator-namespaced created
+clusterrolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator-kafka-client-delegation created
+clusterrole.rbac.authorization.k8s.io/strimzi-kafka-client created
+serviceaccount/strimzi-cluster-operator created
+clusterrole.rbac.authorization.k8s.io/strimzi-kafka-broker created
+customresourcedefinition.apiextensions.k8s.io/kafkatopics.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkabridges.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkaconnectors.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkaconnects2is.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkaconnects.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkamirrormakers.kafka.strimzi.io created
+configmap/strimzi-cluster-operator created
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 

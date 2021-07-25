@@ -1,0 +1,134 @@
+# =========================================== from installer and producer ===========================================
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ minikube start
+😄  minikube v1.18.1 on Darwin 11.4
+✨  Using the hyperkit driver based on user configuration
+👍  Starting control plane node minikube in cluster minikube
+🔥  Creating hyperkit VM (CPUs=4, Memory=8192MB, Disk=36864MB) ...
+🐳  Preparing Kubernetes v1.20.2 on Docker 20.10.3 ...
+    ▪ Generating certificates and keys ...
+    ▪ Booting up control plane ...
+    ▪ Configuring RBAC rules ...
+🔎  Verifying Kubernetes components...
+    ▪ Using image gcr.io/k8s-minikube/storage-provisioner:v4
+🌟  Enabled addons: storage-provisioner, default-storageclass
+🏄  Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl create namespace hbi
+namespace/hbi created
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl create -f 'https://strimzi.io/install/latest?namespace=hbi' -n hbi
+customresourcedefinition.apiextensions.k8s.io/kafkas.kafka.strimzi.io created
+rolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator-entity-operator-delegation created
+clusterrolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator created
+customresourcedefinition.apiextensions.k8s.io/kafkausers.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkarebalances.kafka.strimzi.io created
+deployment.apps/strimzi-cluster-operator created
+customresourcedefinition.apiextensions.k8s.io/kafkamirrormaker2s.kafka.strimzi.io created
+clusterrole.rbac.authorization.k8s.io/strimzi-entity-operator created
+clusterrole.rbac.authorization.k8s.io/strimzi-cluster-operator-global created
+clusterrolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator-kafka-broker-delegation created
+rolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator created
+clusterrole.rbac.authorization.k8s.io/strimzi-cluster-operator-namespaced created
+clusterrolebinding.rbac.authorization.k8s.io/strimzi-cluster-operator-kafka-client-delegation created
+clusterrole.rbac.authorization.k8s.io/strimzi-kafka-client created
+serviceaccount/strimzi-cluster-operator created
+clusterrole.rbac.authorization.k8s.io/strimzi-kafka-broker created
+customresourcedefinition.apiextensions.k8s.io/kafkatopics.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkabridges.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkaconnectors.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkaconnects2is.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkaconnects.kafka.strimzi.io created
+customresourcedefinition.apiextensions.k8s.io/kafkamirrormakers.kafka.strimzi.io created
+configmap/strimzi-cluster-operator created
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl apply -f https://strimzi.io/examples/latest/kafka/kafka-persistent-single.yaml -n hbi
+kafka.kafka.strimzi.io/my-cluster created
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl wait kafka/my-cluster --for=condition=Ready --timeout=300s -n hbi
+kafka.kafka.strimzi.io/my-cluster condition met
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ 
+aarif@MacBook-Pro~/Documents/dev-ws/edu/strimzi $ kubectl -n hbi run kafka-producer -ti --image=quay.io/strimzi/kafka:0.24.0-kafka-2.8.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic
+If you don't see a command prompt, try pressing enter.
+>
+>
+>Hello from Arif's HBI Kafka
+>
+>
+>ls topics
+>ls /topics
+>
+# =========================================== from observation and consumer ===========================================
+Last login: Sun Jul 25 12:08:50 on ttys000
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+aarif@MacBook-Pro~ $ kubectl get po -A -w
+NAMESPACE     NAME                                      READY   STATUS              RESTARTS   AGE
+hbi           strimzi-cluster-operator-c8ddd59d-zvkbh   0/1     ContainerCreating   0          12s
+kube-system   coredns-74ff55c5b-njx8k                   1/1     Running             0          90s
+kube-system   etcd-minikube                             1/1     Running             0          105s
+kube-system   kube-apiserver-minikube                   1/1     Running             0          105s
+kube-system   kube-controller-manager-minikube          1/1     Running             0          105s
+kube-system   kube-proxy-hfpxb                          1/1     Running             0          90s
+kube-system   kube-scheduler-minikube                   1/1     Running             0          105s
+kube-system   storage-provisioner                       1/1     Running             1          105s
+hbi           strimzi-cluster-operator-c8ddd59d-zvkbh   0/1     Running             0          13s
+hbi           strimzi-cluster-operator-c8ddd59d-zvkbh   1/1     Running             0          39s
+hbi           my-cluster-zookeeper-0                    0/1     Pending             0          0s
+hbi           my-cluster-zookeeper-0                    0/1     Pending             0          0s
+hbi           my-cluster-zookeeper-0                    0/1     ContainerCreating   0          0s
+hbi           my-cluster-zookeeper-0                    0/1     Running             0          11s
+hbi           my-cluster-zookeeper-0                    1/1     Running             0          26s
+hbi           my-cluster-kafka-0                        0/1     Pending             0          0s
+hbi           my-cluster-kafka-0                        0/1     Pending             0          0s
+hbi           my-cluster-kafka-0                        0/1     ContainerCreating   0          0s
+hbi           my-cluster-kafka-0                        0/1     Running             0          1s
+hbi           my-cluster-kafka-0                        1/1     Running             0          18s
+hbi           my-cluster-entity-operator-cd5c4fbfd-764dk   0/3     Pending             0          0s
+hbi           my-cluster-entity-operator-cd5c4fbfd-764dk   0/3     Pending             0          1s
+hbi           my-cluster-entity-operator-cd5c4fbfd-764dk   0/3     ContainerCreating   0          1s
+hbi           my-cluster-entity-operator-cd5c4fbfd-764dk   0/3     Running             0          2s
+hbi           my-cluster-entity-operator-cd5c4fbfd-764dk   1/3     Running             0          19s
+hbi           my-cluster-entity-operator-cd5c4fbfd-764dk   1/3     Running             0          23s
+hbi           my-cluster-entity-operator-cd5c4fbfd-764dk   2/3     Running             0          25s
+hbi           my-cluster-entity-operator-cd5c4fbfd-764dk   3/3     Running             0          30s
+hbi           kafka-producer                               0/1     Pending             0          0s
+hbi           kafka-producer                               0/1     Pending             0          0s
+hbi           kafka-producer                               0/1     ContainerCreating   0          0s
+hbi           kafka-producer                               1/1     Running             0          2s
+hbi           kafka-consumer                               0/1     Pending             0          0s
+hbi           kafka-consumer                               0/1     Pending             0          0s
+hbi           kafka-consumer                               0/1     ContainerCreating   0          0s
+hbi           kafka-consumer                               1/1     Running             0          1s
+
+
+aarif@MacBook-Pro~ $ kubectl -n hbi run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.24.0-kafka-2.8.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
+If you don't see a command prompt, try pressing enter.
+[2021-07-25 16:19:13,650] WARN [Consumer clientId=consumer-console-consumer-29388-1, groupId=console-consumer-29388] Error while fetching metadata with correlation id 2 : {my-topic=LEADER_NOT_AVAILABLE} (org.apache.kafka.clients.NetworkClient)
+
+
+Hello from Arif's HBI Kafka
+
+
+ls topics
+ls /topics
+
+
+
