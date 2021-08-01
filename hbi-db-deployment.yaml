@@ -104,7 +104,7 @@ spec:
         
       dnsPolicy: ClusterFirst
       imagePullSecrets:
-      - name: arifsregistryredhatsecret
+      - name: rhreg-secret
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}

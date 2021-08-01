@@ -1,0 +1,31 @@
+# start minikube cluster
+minikube start
+
+# Setup kafka using strimzi
+kubectl create namespace kafka
+kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
+kubectl apply -f https://strimzi.io/examples/latest/kafka/kafka-persistent-single.yaml -n kafka 
+
+# Verify kakfa Setup by executing the following two commands in two separete terminal windows. then type some message in producer and verify it the consumer terminal.
+kubectl -n kafka run kafka-producer -ti --image=quay.io/strimzi/kafka:0.24.0-kafka-2.8.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic
+kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.24.0-kafka-2.8.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
+
+# create hbi namespace
+kubectl create namespace hbi
+
+# create imagePullSecrets
+kubectl -n hbi create -f hbi-secret-quay.yaml
+kubectl -n hbi create -f hbi-secret-rhreg.yaml
+
+kubectl -n hbi patch serviceaccount default -p '{"imagePullSecrets": [{"name": "quay-secret"}]}'
+kubectl -n hbi patch serviceaccount default -p '{"imagePullSecrets": [{"name": "rhreg-secret"}]}'
+
+# create pvc needed for hbi database
+kubectl -n hbi create -f hbi-pvc.yaml
+
+# deploy postgresql database
+kubectl -n hbi create -f hbi-db-deployment.yaml
+kubectl -n hbi create -f hbi-db-service.yaml
+
+# deploy mq-services including DB migrations.
+kubectl -n hbi create -f hbi-mq-deployment.yaml
