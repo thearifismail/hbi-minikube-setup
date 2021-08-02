@@ -1,14 +1,15 @@
 # start minikube cluster
 minikube start
 
-# Setup kafka using strimzi
+# Setup kafka using strimzi following https://strimzi.io/quickstarts/
 kubectl create namespace kafka
 kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 kubectl apply -f https://strimzi.io/examples/latest/kafka/kafka-persistent-single.yaml -n kafka 
+kubectl wait kafka/my-cluster --for=condition=Ready --timeout=300s -n kafka 
 
 # Verify kakfa Setup by executing the following two commands in two separete terminal windows. then type some message in producer and verify it the consumer terminal.
-kubectl -n kafka run kafka-producer -ti --image=quay.io/strimzi/kafka:0.24.0-kafka-2.8.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic
-kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.24.0-kafka-2.8.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
+# kubectl -n kafka run kafka-producer -ti --image=quay.io/strimzi/kafka:0.24.0-kafka-2.8.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list my-cluster-kafka-bootstrap:9092 --topic my-topic
+# kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.24.0-kafka-2.8.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
 
 # create hbi namespace
 kubectl create namespace hbi
@@ -27,5 +28,13 @@ kubectl -n hbi create -f hbi-pvc.yaml
 kubectl -n hbi create -f hbi-db-deployment.yaml
 kubectl -n hbi create -f hbi-db-service.yaml
 
+# kubectl port-forward "$HBI_DB_SVC" 5432:5432 -n "$PROJECT_NAME" >/dev/null 2>&1 &
+kubectl port-forward svc/inventory-db 5432:5432 -n hbi >/dev/null 2>&1 &
+
 # deploy mq-services including DB migrations.
 kubectl -n hbi create -f hbi-mq-deployment.yaml
+kubectl -n hbi create -f hbi-mq-service.yaml
+
+# deploy insights-inventory-service
+kubectl -n hbi create -f hbi-insights-inventory.yaml
+kubectl -n hbi create -f hbi-insights-inventory-service.yaml
