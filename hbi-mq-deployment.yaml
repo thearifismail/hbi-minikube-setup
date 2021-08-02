@@ -53,8 +53,6 @@ spec:
             weight: 99
       initContainers:
       - command: 
-          # - /bin/sh
-          # - -c 
           - python 
           - manage.py
           - db
@@ -71,46 +69,6 @@ spec:
             value: insights
           - name: INVENTORY_DB_PORT
             value: "5432"
-          - name: INVENTORY_LOG_LEVEL
-            value: DEBUG
-          - name: INVENTORY_DB_SSL_MODE
-            value: prefer
-          - name: INVENTORY_DB_SSL_CERT
-            value: /etc/inventory/cert/rds-cacert
-          - name: KAFKA_CONSUMER_TOPIC
-            value: platform.inventory.host-ingress
-          - name: KAFKA_BOOTSTRAP_SERVERS
-            value: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
-          - name: KAFKA_HOST_INGRESS_P1_TOPIC
-            value: platform.inventory.host-ingress-p1
-          - name: KAFKA_HOST_INGRESS_TOPIC
-            value: platform.inventory.host-ingress
-          - name: KAFKA_SYSTEM_PROFILE_TOPIC
-            value: platform.inventory.system-profile
-          - name: KAFKA_HOST_INGRESS_GROUP
-            value: inventory-mq
-          - name: PAYLOAD_TRACKER_KAFKA_TOPIC
-            value: platform.payload-status
-          - name: PAYLOAD_TRACKER_SERVICE_NAME
-            value: inventory-mq-service
-          - name: PAYLOAD_TRACKER_ENABLED
-            value: 'true'
-          - name: KAFKA_PRODUCER_ACKS
-            value: '1'
-          - name: KAFKA_PRODUCER_RETRIES
-            value: '0'
-          - name: KAFKA_PRODUCER_RETRY_BACKOFF_MS
-            value: '100'
-          - name: KAFKA_SECURITY_PROTOCOL
-            value: PLAINTEXT
-          - name: KAFKA_SSL_CAFILE
-            value: '/opt/certs/kafka-cacert'
-          - name: KAFKA_SASL_MECHANISM
-            value: ''
-          - name: KAFKA_SASL_USERNAME
-            value: 'kafka_user'
-          - name: KAFKA_SASL_PASSWORD
-            value: 'kafka_password'
         image: quay.io/thearifismail/insights-inventory:97d21ce
         imagePullPolicy: IfNotPresent
       containers:
@@ -182,7 +140,7 @@ spec:
           #  successThreshold: 1
         name: inventory-mq-p1
         ports:
-        - containerPort: 8085
+        - containerPort: 8080
           protocol: TCP
         # readinessProbe:
         #   tcpSocket:
