@@ -1,0 +1,215 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: insights-inventory
+  name: insights-inventory
+spec:
+  minReadySeconds: 15
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 9
+  selector:
+    matchLabels:
+      app: insights-inventory
+      service: insights-inventory
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      # annotations:
+        # Trying them if not working the expected way.
+      creationTimestamp: null
+      labels:
+        app: insights-inventory
+        service: insights-inventory
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - insights-inventory
+                - key: service
+                  operator: In
+                  values: 
+                  - insights-inventory
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - insights-inventory
+              topologyKey: kubernetes.io/hostname
+            weight: 99
+      containers:
+      - command:
+        - gunicorn
+        - --workers=4
+        - --threads=8
+        - --worker-tmp-dir=/tmp
+        - -c
+        - gunicorn.conf.py
+        - -b
+        - 0.0.0.0:8080
+        - -t
+        - '60'
+        - run
+        env:
+          - name: INVENTORY_DB_HOST
+            value: inventory-db.hbi.svc.cluster.local
+          - name: INVENTORY_DB_USER
+            value: insights
+          - name: INVENTORY_DB_PASS
+            value: insights
+          - name: INVENTORY_DB_NAME
+            value: insights
+          - name: INVENTORY_DB_PORT
+            value: "5432"
+          - name: APP_NAME
+            value: inventory
+          - name: PATH_PREFIX
+            value: api
+          - name: INVENTORY_LEGACY_API_URL
+            value: /r/insights/platform/inventory/v1/
+          - name: prometheus_multiproc_dir
+            value: /tmp/inventory/prometheus
+          - name: INVENTORY_LOG_LEVEL
+            value: DEBUG
+          - name: URLLIB3_LOG_LEVEL
+            value: WARNING
+          - name: INVENTORY_DB_SSL_MODE
+            value: prefer
+          - name: INVENTORY_DB_SSL_CERT
+            value: /etc/inventory/cert/rds-cacert
+          - name: KAFKA_CONSUMER_TOPIC
+            value: platform.inventory.host-ingress
+          - name: KAFKA_BOOTSTRAP_SERVERS
+            value: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+          - name: KAFKA_HOST_INGRESS_P1_TOPIC
+            value: platform.inventory.host-ingress-p1
+          - name: KAFKA_HOST_INGRESS_TOPIC
+            value: platform.inventory.host-ingress
+          - name: KAFKA_SYSTEM_PROFILE_TOPIC
+            value: platform.inventory.system-profile
+          - name: KAFKA_HOST_INGRESS_GROUP
+            value: insights-inventory
+          - name: PAYLOAD_TRACKER_KAFKA_TOPIC
+            value: platform.payload-status
+          - name: PAYLOAD_TRACKER_SERVICE_NAME
+            value: inventory
+          - name: PAYLOAD_TRACKER_ENABLED
+            value: 'true'
+          - name: XJOIN_GRAPHQL_URL
+            value: http://${XJOIN_SEARCH_HOST}:4000/graphql
+          - name: BULK_QUERY_SOURCE
+            value: db
+          - name: BULK_QUERY_SOURCE_BETA
+            value: db
+          - name: REST_POST_ENABLED
+            value: 'true'
+          - name: RBAC_ENDPOINT
+            value: http://rbac.rbac-test.svc.cluster.local:8080
+          - name: RBAC_ENFORCED
+            value: 'false'
+          - name: KAFKA_PRODUCER_ACKS
+            value: '1'
+          - name: KAFKA_PRODUCER_RETRIES
+            value: '0'
+          - name: KAFKA_PRODUCER_RETRY_BACKOFF_MS
+            value: '100'
+          - name: KAFKA_ADDITIONAL_VALIDATION_TOPIC
+            value: platform.inventory.host-ingress-p1
+          - name: KAFKA_SP_VALIDATOR_MAX_MESSAGES
+            value: '1000000'
+          - name: SP_AUTHORIZED_USERS
+            value: tuser@redhat.com
+          - name: KAFKA_SECURITY_PROTOCOL
+            value: PLAINTEXT
+          - name: KAFKA_SSL_CAFILE
+            value: '/opt/certs/kafka-cacert'
+          - name: KAFKA_SASL_MECHANISM
+            value: ''
+          - name: KAFKA_SASL_USERNAME
+            value: 'kafka_user'
+          - name: KAFKA_SASL_PASSWORD
+            value: 'kafka_password'
+        image: quay.io/thearifismail/insights-inventory:97d21ce
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 60
+        name: insights-inventory
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 60
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        securityContext: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tmp/inventory/prometheus
+          name: prometheus-volume
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: quay-secret
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: prometheus-volume
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: insights-inventory
+  name: insights-inventory
+spec:
+  ports:
+  - name: port-8080
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: insights-inventory
+    service: insights-inventory
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
