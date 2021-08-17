@@ -34,19 +34,20 @@ kubectl -n hbi patch serviceaccount default -p '{"imagePullSecrets": [{"name": "
 kubectl -n hbi create -f hbi-pvc.yaml
 
 # deploy postgresql database
-kubectl -n hbi create -f hbi-db-deployment.yaml
-kubectl -n hbi create -f hbi-db-service.yaml
+kubectl -n hbi create -f hbi-db.yaml
 
 # kubectl port-forward "$HBI_DB_SVC" 5432:5432 -n "$PROJECT_NAME" >/dev/null 2>&1 &
 kubectl port-forward svc/inventory-db 5432:5432 -n hbi >/dev/null 2>&1 &
 
 # deploy mq-services including DB migrations.
-kubectl -n hbi create -f hbi-mq-deployment.yaml
-kubectl -n hbi create -f hbi-mq-service.yaml
+kubectl -n hbi create -f hbi-mq-p1.yaml
+kubectl -n hbi create -f hbi-mq-pmin.yaml
 
 # export mq-p1 service for creating hosts
-kubectl -n kafka port-forward my-cluster-kafka-bootstrap 9092:9092
+kubectl -n kafka port-forward svc/my-cluster-kafka-bootstrap 9092:9092 >/dev/null 2>&1 &
 
 # deploy insights-inventory-service
-kubectl -n hbi create -f hbi-insights-inventory.yaml
-kubectl -n hbi create -f hbi-insights-inventory-service.yaml
+kubectl -n hbi create -f hbi-api-server.yaml
+
+# verify api server/service
+kubectl port-forward svc/insights-inventory 8080:8080 -n hbi >/dev/null 2>&1 &
