@@ -12,7 +12,7 @@ spec:
   selector:
     matchLabels:
       app: insights-inventory
-      # service: insights-inventory
+      service: insights-inventory
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -25,7 +25,7 @@ spec:
       creationTimestamp: null
       labels:
         app: insights-inventory
-        # service: insights-inventory
+        service: insights-inventory
     spec:
       affinity:
         podAntiAffinity:

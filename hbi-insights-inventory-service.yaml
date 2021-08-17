@@ -10,9 +10,10 @@ spec:
   - name: port-8080
     port: 8080
     protocol: TCP
-    targetPort: 8000
+    targetPort: 8080
   selector:
-    app: host-inventory-service
+    # app: host-inventory-service
+    app: insights-inventory
     service: insights-inventory
   sessionAffinity: None
   type: ClusterIP
