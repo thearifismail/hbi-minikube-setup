@@ -10,3 +10,9 @@ ConfigMap:
 4. define xjoin-pipeline, which connects DB to elasticsearch
 5. Deploy install hbi, should use Kafka
 6. Deploy xjoin-search
+
+
+Once Operators are deployed, how to deploy the CRDs?
+What are the different parameter to provide?
+How to define xjoin-pipeline?
+Where does strimzi come into the picture?
