@@ -1,0 +1,113 @@
+﻿apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  labels:
+    app: insights-inventory
+    pod: host-inventory-reaper
+  name: host-inventory-reaper
+spec:
+  schedule: '@hourly'
+  concurrencyPolicy: Allow
+  suspend: false
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: insights-inventory
+        pod: host-inventory-reaper
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app: insights-inventory
+            pod: host-inventory-reaper
+        spec:
+          restartPolicy: Never
+          serviceAccountName: default
+          schedulerName: default-scheduler
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app: insights-inventory
+                        pod: host-inventory-reaper
+                    topologyKey: failure-domain.beta.kubernetes.io/zone
+                - weight: 99
+                  podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app: insights-inventory
+                        pod: host-inventory-reaper
+                    topologyKey: kubernetes.io/hostname
+          terminationGracePeriodSeconds: 30
+          securityContext: {}
+          containers:
+            - resources:
+                limits:
+                  cpu: '1'
+                  memory: 2Gi
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+              terminationMessagePath: /dev/termination-log
+              name: host-inventory-reaper
+              command:
+                - python 
+                - host_reaper.py
+              env:
+                - name: INVENTORY_DB_HOST
+                  value: inventory-db.hbi.svc.cluster.local
+                - name: INVENTORY_DB_USER
+                  value: insights
+                - name: INVENTORY_DB_PASS
+                  value: insights
+                - name: INVENTORY_DB_NAME
+                  value: insights
+                - name: INVENTORY_DB_PORT
+                  value: "5432"
+                - name: INVENTORY_LOG_LEVEL
+                  value: DEBUG
+                - name: INVENTORY_DB_SSL_MODE
+                  value: prefer
+                # - name: INVENTORY_DB_SSL_CERT
+                - name: KAFKA_BOOTSTRAP_SERVERS
+                  value: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+                - name: PAYLOAD_TRACKER_KAFKA_TOPIC
+                  value: platform.payload-status
+                - name: PAYLOAD_TRACKER_SERVICE_NAME
+                  value: inventory-mq-service
+                - name: PAYLOAD_TRACKER_ENABLED
+                  value: 'true'
+                - name: PROMETHEUS_PUSHGATEWAY
+                  # value: 'prometheus-push.insights-push-prod.svc.cluster.local:9091'
+                  value: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9091
+                - name: KAFKA_PRODUCER_ACKS
+                  value: '1'
+                - name: KAFKA_PRODUCER_RETRIES
+                  value: '8'
+                - name: KAFKA_PRODUCER_RETRY_BACKOFF_MS
+                  value: '250'
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: KAFKA_SECURITY_PROTOCOL
+                  value: PLAINTEXT
+                - name: KAFKA_SASL_MECHANISM
+                  value: PLAIN
+              ports:
+                - name: metrics
+                  containerPort: 9126
+                  protocol: TCP
+              imagePullPolicy: IfNotPresent
+              terminationMessagePolicy: File
+              image: 'quay.io/thearifismail/insights-inventory:97d21ce'
+          serviceAccount: default
+          dnsPolicy: ClusterFirst
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
