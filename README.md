@@ -1,10 +1,10 @@
 # Host Inventory Deployment to Minikube
-This project shows how to deploy "host inventory" to a kubernetes namespace.  Target audience are new team members or members with limited experience with Kubernetes and OpenShift.  Experienced users may find it too basic and rudimentary and may expect everybody should know.  The reality is that in real world there are so many pieces and integrating services in a kubernetes cluster that it is hard to quickly recall the required howtos to be efficient. e.g. a user may not know how to deploy kafka to write messages for creating hosts.  Users are expected to know kubernetes concepts.
+This project shows how to deploy "host inventory" to a kubernetes namespace.  Target audience are new team members or members with limited experience with Kubernetes and OpenShift.  Using this project as a guide, users can deploy their latest code to Kubernetes/Minikube before delivering the changes to code repo.  Experienced users may find it too basic and rudimentary.  The reality is that in real world there are so many pieces and integrating services in a kubernetes cluster that it is hard to quickly recall the required howtos to be efficient. e.g. a user may not know how to deploy kafka to write messages for creating hosts.  Users are expected to know kubernetes concepts.
 
 It provides samples written from scratch for creating scratch deployments, services, and cron jobs from scratch.  Though the yamls are written for kubernetes and deployed to minikube, they are expected to work without any problems in OpenShift or Code Ready Containers.
 
 # Setup Minikube
-For this project, minikube is set to use the following default parameters.
+For this project, Install [Minikube](https://minikube.sigs.k8s.io/docs/start/) and set it to use the following default parameters.
 ```
 cat ~/.minikube/config/config.json
 {
@@ -20,7 +20,7 @@ minikube start
 ```
 
 # Setup Kafka
-Kafka is setup using Strimzi "Getting Started" instrucations available at https://strimzi.io/quickstarts/
+Kafka is setup using [Strimzi's Getting Started](https://strimzi.io/quickstarts/).  Host inventory depends on it for posting messages for creating hosts and various other tasks.
 ```
 kubectl create namespace kafka
 kubectl create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
