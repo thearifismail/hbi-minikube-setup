@@ -40,7 +40,7 @@ kubectl -n kafka run kafka-producer -ti --image=quay.io/strimzi/kafka:0.24.0-kaf
 ```
 In the second terminal, type the following to cosume incoming messages.
 ```
-kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.24.0-kafka-2.8.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning -->
+kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.24.0-kafka-2.8.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
 ```
 Typing anything in the producer terminal.  It should appear in the consumer. Appearing messages in the consumer terminal verifies that Kafka is working as expected.
 
@@ -74,21 +74,11 @@ kubectl -n hbi create -f hbi-pvc.yaml
 kubectl -n hbi create -f hbi-db.yaml
 ```
 
-### Expose services for access from outside of the cluster
-```
-kubectl port-forward svc/inventory-db 5432:5432 -n hbi >/dev/null 2>&1 &
-```
-
-### Deploy mq-services including DB migrations.
+### Deploy mq-services; "hbi-mq-p1" initializes/migrates the DB
 ```
 kubectl -n hbi create -f hbi-mq-p1.yaml
 kubectl -n hbi create -f hbi-mq-pmin.yaml
 kubectl -n hbi create -f hbi-mq-sp.yaml
-```
-
-### Export mq-p1 service for creating hosts
-```
-kubectl -n kafka port-forward svc/my-cluster-kafka-bootstrap 9092:9092 >/dev/null 2>&1 &
 ```
 
 ### Deploy insights-inventory-service
@@ -96,8 +86,10 @@ kubectl -n kafka port-forward svc/my-cluster-kafka-bootstrap 9092:9092 >/dev/nul
 kubectl -n hbi create -f hbi-api-server.yaml
 ```
 
-### Verify api server/service
+###  Expose services for access from outside of the cluster
 ```
+kubectl port-forward svc/inventory-db 5432:5432 -n hbi >/dev/null 2>&1 &
+kubectl -n kafka port-forward svc/my-cluster-kafka-bootstrap 9092:9092 >/dev/null 2>&1 &
 kubectl port-forward svc/insights-inventory 8080:8080 -n hbi >/dev/null 2>&1 &
 ```
 
@@ -113,5 +105,5 @@ kubectl -n hbi create -f hbi-job-synchronizer.yaml
 
 ### Deploy cronjob for system profile validation
 ```
-kubectl -n hbi apply -f hbi-cj-sp-validator.yaml
+kubectl -n hbi create -f hbi-cj-sp-validator.yaml
 ```
