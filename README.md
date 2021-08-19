@@ -36,7 +36,7 @@ In the second terminal, type the following to cosume incoming messages.
 ```
 kubectl -n kafka run kafka-consumer -ti --image=quay.io/strimzi/kafka:0.24.0-kafka-2.8.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
 ```
-Typing anything in the producer terminal.  It should appear in the consumer. Appearing messages in the consumer terminal verifies that Kafka is working as expected.
+Type anything in the producer terminal.  It should appear in the consumer terminal. Appearing messages in the consumer terminal verifies that Kafka is working as expected.
 
 # Setup Host Inventory Resources
 
