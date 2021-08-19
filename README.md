@@ -106,3 +106,6 @@ Deploy cronjob for system profile validation
 ```
 kubectl -n hbi create -f hbi-cj-sp-validator.yaml
 ```
+
+# TODO
+Deploy xjoin-search, RBAC, and may be prometheus.
