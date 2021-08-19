@@ -1,0 +1,159 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: inventory-mq
+  name: inventory-mq-sp
+spec:
+  minReadySeconds: 15
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: inventory-mq
+      service: inventory-mq-sp
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: inventory-mq
+        service: inventory-mq-sp
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - inventory-mq
+                - key: service
+                  operator: In
+                  values: 
+                  - inventory-mq-sp
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - inventory-mq
+                - key: service
+                  operator: In
+                  values:
+                  - inventory-mq-sp
+              topologyKey: kubernetes.io/hostname
+            weight: 99
+      containers:
+      - command:
+        - python
+        - inv_mq_service.py
+        name: inventory-mq-sp
+        image: quay.io/thearifismail/insights-inventory:97d21ce
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: INVENTORY_DB_HOST
+            value: inventory-db.hbi.svc.cluster.local
+          - name: INVENTORY_DB_USER
+            value: insights
+          - name: INVENTORY_DB_PASS
+            value: insights
+          - name: INVENTORY_DB_NAME
+            value: insights
+          - name: INVENTORY_DB_PORT
+            value: "5432"
+          - name: INVENTORY_LOG_LEVEL
+            value: DEBUG
+          - name: INVENTORY_DB_SSL_MODE
+            value: prefer
+          - name: INVENTORY_DB_SSL_CERT
+            value: /etc/inventory/cert/rds-cacert
+          - name: KAFKA_CONSUMER_TOPIC
+            value: platform.inventory.system-profile
+          - name: KAFKA_BOOTSTRAP_SERVERS
+            value: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+          - name: KAFKA_HOST_INGRESS_TOPIC
+            value: platform.inventory.host-ingress
+          - name: KAFKA_SYSTEM_PROFILE_TOPIC
+            value: platform.inventory.system-profile
+          - name: KAFKA_HOST_INGRESS_GROUP
+            value: inventory-mq
+          - name: PAYLOAD_TRACKER_KAFKA_TOPIC
+            value: platform.payload-status
+          - name: PAYLOAD_TRACKER_SERVICE_NAME
+            value: inventory-mq-service
+          - name: PAYLOAD_TRACKER_ENABLED
+            value: 'true'
+          - name: KAFKA_PRODUCER_ACKS
+            value: '1'
+          - name: KAFKA_PRODUCER_RETRIES
+            value: '0'
+          - name: KAFKA_PRODUCER_RETRY_BACKOFF_MS
+            value: '100'
+          - name: KAFKA_SECURITY_PROTOCOL
+            value: PLAINTEXT
+          - name: KAFKA_SSL_CAFILE
+            value: '/opt/certs/kafka-cacert'
+          - name: KAFKA_SASL_MECHANISM
+            value: ''
+          - name: KAFKA_SASL_USERNAME
+            value: 'kafka_user'
+          - name: KAFKA_SASL_PASSWORD
+            value: 'kafka_password'
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 9126
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+        name: inventory-mq-sp
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        securityContext:
+          capabilities: {}
+          privileged: false
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: quay-secret
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: inventory-mq
+    pod: inventory-mq-sp
+  name: inventory-mq-sp
+spec:
+  ports:
+  - name: port-9126
+    port: 9126
+    protocol: TCP
+    targetPort: 9126
+  selector:
+    pod: inventory-mq-sp
+  sessionAffinity: None
+  type: ClusterIP
