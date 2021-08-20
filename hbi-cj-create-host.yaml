@@ -1,0 +1,110 @@
+﻿apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: create-host
+spec:
+  schedule: "*/5 * * * *" # for testing run every 5 min
+  # schedule: '@hourly'
+  startingDeadlineSeconds: 300
+  concurrencyPolicy: Forbid
+  suspend: false
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app: insights-inventory
+            parent: create-host
+            pod: create-host
+        spec:
+          containers:
+            - resources:
+                limits:
+                  cpu: 500m
+                  memory: 2Gi
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+              terminationMessagePath: /dev/termination-log
+              name: create-host
+              command:
+                - python
+                - utils/kafka_producer.py
+              env:
+                - name: INVENTORY_DB_HOST
+                  value: inventory-db.hbi.svc.cluster.local
+                - name: INVENTORY_DB_USER
+                  value: insights
+                - name: INVENTORY_DB_PASS
+                  value: insights
+                - name: INVENTORY_DB_PORT
+                  value: "5432"
+                - name: INVENTORY_DB_NAME
+                  value: insights
+                - name: GIT_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: dippy-bot
+                      key: user
+                - name: GIT_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: dippy-bot
+                      key: token
+                - name: INVENTORY_LOG_LEVEL
+                  value: INFO
+                - name: INVENTORY_DB_SSL_MODE
+                  value: verify-full
+                - name: INVENTORY_DB_SSL_CERT
+                  value: /etc/inventory/cert/rds-cacert
+                - name: KAFKA_BOOTSTRAP_SERVERS
+                  value: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+                - name: PAYLOAD_TRACKER_KAFKA_TOPIC
+                  value: platform.payload-status
+                - name: PAYLOAD_TRACKER_SERVICE_NAME
+                  value: inventory-mq-service
+                - name: PAYLOAD_TRACKER_ENABLED
+                  value: 'true'
+                - name: PROMETHEUS_PUSHGATEWAY
+                  value: 'my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9091'
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: KAFKA_PRODUCER_ACKS
+                  value: '1'
+                - name: KAFKA_PRODUCER_RETRIES
+                  value: '8'
+                - name: KAFKA_PRODUCER_RETRY_BACKOFF_MS
+                  value: '250'
+                - name: KAFKA_CONSUMER_TOPIC
+                  value: platform.inventory.host-ingress
+                - name: KAFKA_HOST_INGRESS_TOPIC
+                  value: platform.inventory.host-ingress
+                - name: KAFKA_SYSTEM_PROFILE_TOPIC
+                  value: platform.inventory.system-profile
+                - name: KAFKA_ADDITIONAL_VALIDATION_TOPIC
+                  value: platform.inventory.host-ingress-p1
+                - name: KAFKA_SP_VALIDATOR_MAX_MESSAGES
+                  value: '100000'
+                - name: KAFKA_SECURITY_PROTOCOL
+                  value: PLAINTEXT
+                - name: KAFKA_SSL_CAFILE
+                  value: /opt/certs/kafka-cacert
+              imagePullPolicy: Always
+              terminationMessagePolicy: File
+              image: 'quay.io/thearifismail/insights-inventory:97d21ce'
+          restartPolicy: Never
+          terminationGracePeriodSeconds: 30
+          dnsPolicy: ClusterFirst
+          securityContext: {}
+          imagePullSecrets:
+            - name: quay-secret
+            - name: rh-registry-pull
+          schedulerName: default-scheduler
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 10
