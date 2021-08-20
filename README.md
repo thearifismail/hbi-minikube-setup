@@ -40,14 +40,19 @@ Type anything in the producer terminal.  It should appear in the consumer termin
 
 # Setup Host Inventory Resources
 
+### Create hbi namespace
+```
+kubectl create namespace hbi
+```
+
 ## Setup Secrets.
 Create secrets for pulling images from image registries and checking out code from github
 ```
-kubectl create secret docker-registry quay-secret --docker-server=quay.io --docker-username=<username> --docker-password=<password> --docker-email=<email_address>
+kubectl -n hbi create secret docker-registry quay-secret --docker-server=quay.io --docker-username=<username> --docker-password=<password> --docker-email=<email_address>
 
-kubectl create secret docker-registry quay-secret --docker-server=registry.redhat.io --docker-username=<username> --docker-password=<password> --docker-email=<email_address>
+kubectl -n hbi create secret docker-registry quay-secret --docker-server=registry.redhat.io --docker-username=<username> --docker-password=<password> --docker-email=<email_address>
 
-kubectl create secret generic github-bot --from-literal=user=<github_user> --from-literal=token=<github_token>
+kubectl -n hbi create secret generic github-bot --from-literal=user=<github_user> --from-literal=token=<github_token>
 ```
 
 Attach secrets to service accounts, which provide identity for processes that run in a pod.
@@ -58,11 +63,6 @@ kubectl -n hbi patch serviceaccount default -p '{"imagePullSecrets": [{"name": "
 
 ## Create Resources
 The created resources include namespace, secrets, deploymengs, services, cronJobs/jobs.
-
-### Create hbi namespace
-```
-kubectl create namespace hbi
-```
 
 ### Create pvc needed for hbi database
 ```
@@ -88,9 +88,9 @@ kubectl -n hbi create -f hbi-api-server.yaml
 
 ###  Expose services for access from outside of the cluster
 ```
-kubectl port-forward svc/inventory-db 5432:5432 -n hbi >/dev/null 2>&1 &
+kubectl -n hbi port-forward svc/inventory-db 5432:5432 >/dev/null 2>&1 &
 kubectl -n kafka port-forward svc/my-cluster-kafka-bootstrap 9092:9092 >/dev/null 2>&1 &
-kubectl port-forward svc/insights-inventory 8080:8080 -n hbi >/dev/null 2>&1 &
+kubectl -n hbi port-forward svc/insights-inventory 8080:8080 >/dev/null 2>&1 &
 ```
 1. 5432: access database.
 1. 9092: needed for creating hosts and posting messages to Kafka.
