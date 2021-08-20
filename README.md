@@ -107,5 +107,18 @@ Deploy cronjob for system profile validation
 kubectl -n hbi create -f hbi-cj-sp-validator.yaml
 ```
 
-# TODO
-Deploy xjoin-search, RBAC, and may be prometheus.
+# How to add a service
+To add a service, start with an existing deployment yaml, like `hbi-mq-p1`, or `hbi-api-server` and then update `command` and `environment variables` as needed.
+
+For adding an integrating 3rd party service, e.g. RBAC.  
+1. Check the Stage or Prod cluster for a service using RBAC.  It should show what environment variables are needed to access the service.  
+1. Add the required variables to the service using RBAC.
+1. To find what RBAC image to use and what environment variables to define run
+    ```
+    kubectl -n <namespace> get deployment <RBAC_deployment> -o yaml
+    kubectl -n <namespace> get pod <RBAC_pod> -o yaml 
+    ```
+1. Define `RBAC` service and deploy it, like the services shown above.
+
+Accessing `Stage` or `Prod` cluster may require requesting access through [app-interface](https://gitlab.cee.redhat.com/service/app-interface/) or seek help someone who can get the deployment/pod yamls.
+
