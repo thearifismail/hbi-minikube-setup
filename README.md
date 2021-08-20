@@ -1,4 +1,4 @@
-# Host Inventory Deployment to Minikube
+# Host Inventory Deployment to Minikube from Scratch
 This project shows how to deploy "host inventory" to a kubernetes namespace.  Target audience are new team members or members with limited experience with Kubernetes and OpenShift.  Using this project as a guide, users can deploy their latest code to Kubernetes/Minikube before delivering the changes to code repo.  Experienced users may find it too basic and rudimentary.  The reality is that in real world there are so many pieces and integrating services in a kubernetes cluster that it is hard to quickly recall the required howtos to be efficient. e.g. a user may not know how to deploy kafka to write messages for creating hosts.  Users are expected to know kubernetes concepts.
 
 It provides samples written from scratch for creating scratch deployments, services, and cron jobs from scratch.  Though the yamls are written for kubernetes and deployed to minikube, they are expected to work without any problems in OpenShift or Code Ready Containers.
