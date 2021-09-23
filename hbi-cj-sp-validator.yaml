@@ -106,7 +106,7 @@ spec:
                   value: /opt/certs/kafka-cacert
               imagePullPolicy: Always
               terminationMessagePolicy: File
-              image: 'quay.io/thearifismail/insights-inventory:97d21ce'
+              image: 'quay.io/thearifismail/insights-inventory:22e2992'
               # volumeMounts:
               #   - name: rds-client-ca
               #     readOnly: true
