@@ -75,7 +75,7 @@ spec:
               value: PLAINTEXT
             - name: KAFKA_SASL_MECHANISM
               value: PLAIN
-          image: quay.io/thearifismail/insights-inventory:22e2992
+          image: quay.io/thearifismail/insights-inventory:psql-13.3
           imagePullPolicy: IfNotPresent
           name: host-inventory-synchronizer
           ports:

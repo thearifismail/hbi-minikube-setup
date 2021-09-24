@@ -69,14 +69,14 @@ spec:
             value: insights
           - name: INVENTORY_DB_PORT
             value: "5432"
-        image: quay.io/thearifismail/insights-inventory:22e2992
+        image: quay.io/thearifismail/insights-inventory:psql-13.3
         imagePullPolicy: IfNotPresent
       containers:
       - command:
         - python
         - inv_mq_service.py
         name: inventory-mq-p1
-        image: quay.io/thearifismail/insights-inventory:22e2992
+        image: quay.io/thearifismail/insights-inventory:psql-13.3
         imagePullPolicy: IfNotPresent
         env:
           - name: INVENTORY_DB_HOST

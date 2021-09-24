@@ -144,7 +144,7 @@ spec:
             value: 'kafka_user'
           - name: KAFKA_SASL_PASSWORD
             value: 'kafka_password'
-        image: quay.io/thearifismail/insights-inventory:22e2992
+        image: quay.io/thearifismail/insights-inventory:psql-13.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
